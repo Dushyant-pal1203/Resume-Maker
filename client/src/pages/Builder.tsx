@@ -63,6 +63,7 @@ import {
   Network,
   Code2,
   Minus,
+  User,
 } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,7 +92,7 @@ export default function Builder() {
   const updateResumeMutation = useUpdateResume();
   const atsCheckMutation = useAtsCheck();
 
-  // Local state for editing
+  // Local state for editing - CRITICAL: Initialize with default content
   const [content, setContent] = useState<ResumeContent>(defaultResumeContent);
   const [title, setTitle] = useState("Stellar Resume");
   const [selectedTemplate, setSelectedTemplate] = useState("quantum");
@@ -128,12 +129,16 @@ export default function Builder() {
   // Sync server data to local state on load
   useEffect(() => {
     if (resume) {
+      console.log("Loading resume data:", resume);
       setContent(resume.content);
       setTitle(resume.title);
       setSelectedTemplate(resume.template || "quantum");
       setLastSavedContent(resume.content);
       setLastSavedTitle(resume.title);
       setLastSavedTemplate(resume.template || "quantum");
+    } else {
+      console.log("No resume found, using default content");
+      setContent(defaultResumeContent);
     }
   }, [resume]);
 
@@ -147,6 +152,12 @@ export default function Builder() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Handle content changes from editor - CRITICAL FUNCTION
+  const handleContentChange = (newContent: ResumeContent) => {
+    console.log("Content changed in editor:", newContent);
+    setContent(newContent);
+  };
 
   // Debounced Auto-save
   const debouncedContent = useDebounce(content, 1000);
@@ -163,6 +174,7 @@ export default function Builder() {
       debouncedTitle !== lastSavedTitle ||
       debouncedTemplate !== lastSavedTemplate
     ) {
+      console.log("Auto-saving changes...");
       updateResumeMutation.mutate(
         {
           id: resume.id,
@@ -175,8 +187,9 @@ export default function Builder() {
             setLastSavedContent(debouncedContent);
             setLastSavedTitle(debouncedTitle);
             setLastSavedTemplate(debouncedTemplate);
+            console.log("Auto-save successful");
           },
-          onError: () => {
+          onError: (error) => {
             toast({
               title: "Quantum Sync Failed",
               description: "Please check your connection.",
@@ -279,14 +292,54 @@ export default function Builder() {
 
   // Template options
   const templateOptions = [
-    { value: "modern", label: "Modern", icon: Zap },
-    { value: "creative", label: "Creative", icon: Palette },
-    { value: "minimal", label: "Minimal", icon: Minus },
-    { value: "quantum", label: "Quantum Matrix", icon: Grid3x3 },
-    { value: "nebula", label: "Cosmic Nebula", icon: Stars },
-    { value: "circuit", label: "Neural Circuit", icon: CircuitBoard },
-    { value: "data", label: "Data Stream", icon: Binary },
-    { value: "orbit", label: "Orbital", icon: Orbit },
+    {
+      value: "modern",
+      label: "Modern",
+      icon: User,
+      color: "from-purple-600 to-pink-500",
+    },
+    {
+      value: "creative",
+      label: "Creative",
+      icon: Palette,
+      color: "from-blue-600 to-cyan-500",
+    },
+    {
+      value: "minimal",
+      label: "Minimal",
+      icon: Minus,
+      color: "from-gray-600 to-gray-500",
+    },
+    {
+      value: "quantum",
+      label: "Quantum Matrix",
+      icon: Grid3x3,
+      color: "from-indigo-600 to-purple-500",
+    },
+    {
+      value: "nebula",
+      label: "Cosmic Nebula",
+      icon: Stars,
+      color: "from-violet-600 to-pink-500",
+    },
+    {
+      value: "circuit",
+      label: "Neural Circuit",
+      icon: CircuitBoard,
+      color: "from-green-600 to-emerald-500",
+    },
+    {
+      value: "data",
+      label: "Data Stream",
+      icon: Binary,
+      color: "from-amber-600 to-orange-500",
+    },
+    {
+      value: "orbit",
+      label: "Orbital",
+      icon: Orbit,
+      color: "from-sky-600 to-blue-500",
+    },
   ];
 
   // Viewport size options
@@ -835,46 +888,8 @@ export default function Builder() {
             {/* Editor Content */}
             <div className="flex-1 overflow-hidden">
               <div className="h-full overflow-y-auto p-4">
-                <ResumeEditor data={content} onChange={setContent} />
-              </div>
-            </div>
-
-            {/* Mobile Editor Actions */}
-            <div className="border-t border-slate-800/50 p-3 bg-slate-900/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={() => setMobileView("preview")}
-                  variant="outline"
-                  className="flex-1 border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-800/50"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  PREVIEW
-                </Button>
-                <div className="w-3" />
-                <Button
-                  onClick={handleManualSave}
-                  disabled={
-                    !hasUnsavedChanges() || updateResumeMutation.isPending
-                  }
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
-                >
-                  {manualSaveSuccess ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      SYNCED
-                    </>
-                  ) : updateResumeMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      SYNCING
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      SYNC
-                    </>
-                  )}
-                </Button>
+                {/* CRITICAL: Pass content and handleContentChange */}
+                <ResumeEditor data={content} onChange={handleContentChange} />
               </div>
             </div>
           </div>
@@ -909,6 +924,7 @@ export default function Builder() {
                 <div className="relative">
                   {/* Preview glow effect */}
                   <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-blue-500/10 blur-xl rounded-2xl" />
+                  {/* CRITICAL: Pass current content to preview */}
                   <ResumePreview
                     ref={printRef}
                     data={content}
@@ -916,27 +932,6 @@ export default function Builder() {
                     className="shadow-2xl shadow-purple-500/10 rounded-xl overflow-hidden bg-white relative z-10"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Mobile Preview Actions */}
-            <div className="border-t border-slate-800/50 p-3 bg-slate-900/80 backdrop-blur-sm">
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={() => setMobileView("editor")}
-                  variant="outline"
-                  className="border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-800/50"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  EDIT MATRIX
-                </Button>
-                <Button
-                  onClick={handlePrint}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-500 hover:from-cyan-700 hover:to-blue-600 text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  MATERIALIZE
-                </Button>
               </div>
             </div>
           </div>
@@ -969,20 +964,8 @@ export default function Builder() {
           {/* Editor Content */}
           <div className="flex-1 overflow-hidden">
             <div className="h-full overflow-y-auto p-6">
-              {/* Animated background pattern */}
-              <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `
-                    radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.1) 0px, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0px, transparent 50%)
-                  `,
-                  }}
-                />
-              </div>
-
-              <ResumeEditor data={content} onChange={setContent} />
+              {/* CRITICAL: Pass content and handleContentChange */}
+              <ResumeEditor data={content} onChange={handleContentChange} />
             </div>
           </div>
         </div>
@@ -990,8 +973,8 @@ export default function Builder() {
         {/* Preview Panel - Desktop */}
         <div className="hidden md:flex flex-1 flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 via-gray-950/20 to-blue-950/50 backdrop-blur-sm">
           {/* Preview Header */}
-          <div className="h-12 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-sm px-6 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-4">
+          <div className="h-16 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-sm px-6 flex items-center justify-between shrink-0">
+            <div className="flex items-center justify-between gap-6 w-full mt-2">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-600/20 to-blue-600/20">
                   <Globe className="w-5 h-5 text-cyan-300" />
@@ -999,26 +982,33 @@ export default function Builder() {
                 <div>
                   <h2 className="font-semibold text-white">REALITY PREVIEW</h2>
                   <p className="text-xs text-slate-400">
-                    Witness your creation across dimensions
+                    Live preview of your resume - Updates Instantly
                   </p>
                 </div>
               </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 rounded-full">
+                <div
+                  className={`w-2 h-2 rounded-full bg-gradient-to-r ${
+                    templateOptions.find((t) => t.value === selectedTemplate)
+                      ?.color
+                  }`}
+                />
+                <span className="text-sm text-slate-100">
+                  {
+                    templateOptions.find((t) => t.value === selectedTemplate)
+                      ?.label
+                  }{" "}
+                  Template
+                </span>
+              </div>
             </div>
-
-            {/* Viewport Controls */}
           </div>
 
           {/* Preview Content */}
           <div className="flex-1 overflow-auto p-6 lg:p-8">
             <div className="h-auto flex items-center justify-center">
               <motion.div
-                className={`transition-all duration-500 ${
-                  viewportSize === "mobile"
-                    ? "w-full max-w-md scale-100"
-                    : viewportSize === "tablet"
-                    ? "w-full max-w-2xl scale-100"
-                    : "w-full max-w-4xl scale-100"
-                }`}
+                className={`transition-all duration-500 w-full max-w-4xl scale-100`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
@@ -1052,6 +1042,7 @@ export default function Builder() {
                   {/* Glow Effect */}
                   <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-blue-500/10 blur-2xl rounded-2xl" />
 
+                  {/* CRITICAL: Pass current content to preview */}
                   <ResumePreview
                     ref={printRef}
                     data={content}
@@ -1110,7 +1101,7 @@ export default function Builder() {
         )}
       </div>
 
-      {/* ATS Dialog - will use the updated component below */}
+      {/* ATS Dialog */}
       <AtsScoreDialog
         open={isAtsOpen}
         onOpenChange={setIsAtsOpen}
