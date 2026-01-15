@@ -1,17 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type Resume, type InsertResume, type ResumeContent, type AtsCheckResponse } from "@shared/routes";
+import {
+  api,
+  buildUrl,
+  type Resume,
+  type InsertResume,
+  type ResumeContent,
+  type AtsCheckResponse,
+} from "@shared/routes";
 import { z } from "zod";
 
 // --- Types ---
 // Helper to define default empty state for a new resume
 export const defaultResumeContent: ResumeContent = {
-  sectionOrder: ['personal-info', 'experience', 'education', 'skills', 'projects'],
+  sectionOrder: [
+    "personal-info",
+    "experience",
+    "education",
+    "skills",
+    "projects",
+  ],
   personalInfo: {
     fullName: "",
     email: "",
     phone: "",
     address: "",
     summary: "",
+    website: undefined,
+    linkedin: undefined,
   },
   experience: [],
   education: [],
@@ -25,7 +40,9 @@ export function useResumes() {
   return useQuery({
     queryKey: [api.resumes.list.path],
     queryFn: async () => {
-      const res = await fetch(api.resumes.list.path, { credentials: "include" });
+      const res = await fetch(api.resumes.list.path, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch resumes");
       return api.resumes.list.responses[200].parse(await res.json());
     },
@@ -60,7 +77,9 @@ export function useCreateResume() {
       });
       if (!res.ok) {
         if (res.status === 400) {
-          const error = api.resumes.create.responses[400].parse(await res.json());
+          const error = api.resumes.create.responses[400].parse(
+            await res.json()
+          );
           throw new Error(error.message);
         }
         throw new Error("Failed to create resume");
@@ -76,7 +95,10 @@ export function useCreateResume() {
 export function useUpdateResume() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: number } & Partial<InsertResume>) => {
+    mutationFn: async ({
+      id,
+      ...updates
+    }: { id: number } & Partial<InsertResume>) => {
       const validated = api.resumes.update.input.parse(updates);
       const url = buildUrl(api.resumes.update.path, { id });
       const res = await fetch(url, {
@@ -85,10 +107,12 @@ export function useUpdateResume() {
         body: JSON.stringify(validated),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         if (res.status === 400) {
-          const error = api.resumes.update.responses[400].parse(await res.json());
+          const error = api.resumes.update.responses[400].parse(
+            await res.json()
+          );
           throw new Error(error.message);
         }
         throw new Error("Failed to update resume");
@@ -97,7 +121,9 @@ export function useUpdateResume() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [api.resumes.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.resumes.get.path, data.id] });
+      queryClient.invalidateQueries({
+        queryKey: [api.resumes.get.path, data.id],
+      });
     },
   });
 }
@@ -121,7 +147,13 @@ export function useDeleteResume() {
 
 export function useAtsCheck() {
   return useMutation({
-    mutationFn: async ({ resumeData, jobDescription }: { resumeData: ResumeContent; jobDescription?: string }) => {
+    mutationFn: async ({
+      resumeData,
+      jobDescription,
+    }: {
+      resumeData: ResumeContent;
+      jobDescription?: string;
+    }) => {
       const res = await fetch(api.ai.atsCheck.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,7 +164,7 @@ export function useAtsCheck() {
       if (!res.ok) {
         throw new Error("Failed to perform ATS check");
       }
-      
+
       // We manually parse here because Zod response schema might need adjusting if the AI returns slightly different structure
       // Ideally we use the schema:
       return api.ai.atsCheck.responses[200].parse(await res.json());

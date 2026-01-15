@@ -31,8 +31,23 @@ export type InsertResume = z.infer<typeof insertResumeSchema>;
 
 // Flexible Resume Content Type to match any UI
 export interface ResumeContent {
+  proficiencyLevels: any;
+  skillCategories: any;
   sectionOrder?: string[]; // Made optional for backward compatibility
   personalInfo: {
+    additionalInfo: string;
+    expectedSalary: string;
+    noticePeriod: string;
+    availability: string;
+    title: string;
+    relocation: boolean;
+    visaStatus: string;
+    nationality: string;
+    pronouns: string;
+    socialLinks: boolean;
+    preferredContact: string;
+    website: any;
+    linkedin: any;
     fullName: string;
     email: string;
     phone: string;
@@ -55,6 +70,7 @@ export interface ResumeContent {
   }>;
   skills: string[];
   projects: Array<{
+    date: any;
     id: string;
     name: string;
     description: string;

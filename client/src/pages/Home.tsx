@@ -573,6 +573,23 @@ export default function Home() {
                           </div>
 
                           <CardHeader className="relative z-10 pt-8 pb-6 px-8">
+                            <div className="flex items-center gap-2 text-sm text-slate-200 mb-2">
+                              <Clock className="w-4 h-4" />
+                              <motion.span
+                                key={resume.createdAt?.toString() || "unknown"}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                              >
+                                {resume.createdAt
+                                  ? formatDistanceToNow(
+                                      new Date(resume.createdAt),
+                                      {
+                                        addSuffix: true,
+                                      }
+                                    )
+                                  : "Just now"}
+                              </motion.span>
+                            </div>
                             <div className="flex items-center justify-between mb-4">
                               <motion.div
                                 whileHover={{ rotate: 360 }}
@@ -616,31 +633,11 @@ export default function Home() {
 
                           <CardFooter className="relative z-10 pt-6 pb-8 px-8 mt-auto">
                             <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-2 text-sm text-slate-400">
-                                <Clock className="w-4 h-4" />
-                                <motion.span
-                                  key={
-                                    resume.createdAt?.toString() || "unknown"
-                                  }
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                >
-                                  {resume.createdAt
-                                    ? formatDistanceToNow(
-                                        new Date(resume.createdAt),
-                                        {
-                                          addSuffix: true,
-                                        }
-                                      )
-                                    : "Just now"}
-                                </motion.span>
-                              </div>
-
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-between w-full gap-2">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-9 w-9 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                  className="h-9 w-9 rounded-xl text-white hover:text-black hover:bg-slate-300 transition-colors"
                                   onClick={(e) => handleDelete(e, resume.id)}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -648,7 +645,7 @@ export default function Home() {
 
                                 <Button
                                   variant="ghost"
-                                  className="rounded-xl px-4 py-2 text-purple-300 hover:text-white hover:bg-purple-500/10 font-medium group/edit"
+                                  className="rounded-xl px-4 py-2 text-white hover:text-black hover:bg-slate-300 font-medium group/edit"
                                 >
                                   ACCESS ARTIFACT
                                   <ArrowRight className="ml-2 w-4 h-4 group-hover/edit:translate-x-1 transition-transform" />

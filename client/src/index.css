@@ -57,10 +57,17 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight font-bold;
   }
 }
@@ -70,9 +77,11 @@
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
 }
@@ -83,9 +92,11 @@
     margin: 0;
     size: auto;
   }
+
   body {
     background: white;
   }
+
   /* Hide everything except the printable area if specific class is present, 
      though react-to-print handles this largely via ref */
 }
@@ -95,7 +106,7 @@
   width: 210mm;
   min-height: 297mm;
   background: white;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   margin: 0 auto;
   overflow: hidden;
   position: relative;
@@ -103,8 +114,15 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
@@ -113,4 +131,19 @@
 
 .glass-panel {
   @apply bg-white/80 dark:bg-black/80 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
+}
+
+/* Add to your global CSS */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
 }
