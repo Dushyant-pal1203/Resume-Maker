@@ -10,7 +10,7 @@ import {
 import { ResumeContent, AtsCheckResponse } from "@shared/schema";
 import { ResumeEditor } from "@/components/ResumeEditor";
 import { ResumePreview } from "@/components/ResumePreview";
-import { AtsScoreDialog } from "@/components/AtsScoreDialog";
+import { AtsScoreDialog } from "@/components/sections/utils/AtsScoreDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";

@@ -17,23 +17,32 @@ export const resumes = pgTable("resumes", {
   atsFeedback: text("ats_feedback"),
   template: text("template").notNull().default("modern"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Create insert schema with all fields except auto-generated ones
 export const insertResumeSchema = createInsertSchema(resumes).omit({
   id: true,
   createdAt: true,
-  atsScore: true,
-  atsFeedback: true,
+  updatedAt: true,
+});
+
+// Create update schema that allows partial updates including atsScore and atsFeedback
+export const updateResumeSchema = insertResumeSchema.partial().extend({
+  atsScore: z.number().int().min(0).max(100).optional(),
+  atsFeedback: z.string().optional(),
 });
 
 export type Resume = typeof resumes.$inferSelect;
 export type InsertResume = z.infer<typeof insertResumeSchema>;
+export type UpdateResume = z.infer<typeof updateResumeSchema>;
 
-// Flexible Resume Content Type to match any UI
+// Keep the rest of your interface the same...
 export interface ResumeContent {
+  parsedFromPDF: any;
   proficiencyLevels: any;
   skillCategories: any;
-  sectionOrder?: string[]; // Made optional for backward compatibility
+  sectionOrder?: string[];
   personalInfo: {
     additionalInfo: string;
     expectedSalary: string;
@@ -74,18 +83,18 @@ export interface ResumeContent {
     id: string;
     name: string;
     description: string;
-    technologies: string[]; // Fixed: changed from array of objects to string array for simplicity
+    technologies: string[];
   }>;
   customSections?: Array<{
     id: string;
     title: string;
-    type: "text" | "list" | "date" | "link";
+    type: "text" | "list" | "date" | "link" | "rich-text" | "badges";
     content: string | string[];
   }>;
 }
 
 export type CreateResumeRequest = InsertResume;
-export type UpdateResumeRequest = Partial<InsertResume>;
+export type UpdateResumeRequest = UpdateResume;
 
 export interface AtsCheckRequest {
   resumeData: ResumeContent;
@@ -96,4 +105,6 @@ export interface AtsCheckResponse {
   score: number;
   feedback: string;
   suggestions: string[];
+  strengths: string[];
+  weaknesses: string[];
 }

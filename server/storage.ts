@@ -3,7 +3,7 @@ import {
   resumes,
   type InsertResume,
   type Resume,
-  type UpdateResumeRequest
+  type UpdateResume,
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
@@ -11,7 +11,8 @@ export interface IStorage {
   getResumes(): Promise<Resume[]>;
   getResume(id: number): Promise<Resume | undefined>;
   createResume(resume: InsertResume): Promise<Resume>;
-  updateResume(id: number, updates: UpdateResumeRequest): Promise<Resume>;
+  updateResume(id: number, updates: UpdateResume): Promise<Resume>;
+  updateAtsScore(id: number, score: number, feedback: string): Promise<Resume>;
   deleteResume(id: number): Promise<void>;
 }
 
@@ -30,13 +31,35 @@ export class DatabaseStorage implements IStorage {
     return resume;
   }
 
-  async updateResume(id: number, updates: UpdateResumeRequest): Promise<Resume> {
+  async updateResume(id: number, updates: UpdateResume): Promise<Resume> {
+    // Add updatedAt timestamp back
+    const updatesWithTimestamp = {
+      ...updates,
+      updatedAt: new Date(),
+    };
+
     const [updated] = await db
       .update(resumes)
-      .set(updates)
+      .set(updatesWithTimestamp)
       .where(eq(resumes.id, id))
       .returning();
+
+    if (!updated) {
+      throw new Error(`Resume with id ${id} not found`);
+    }
+
     return updated;
+  }
+
+  async updateAtsScore(
+    id: number,
+    score: number,
+    feedback: string
+  ): Promise<Resume> {
+    return this.updateResume(id, {
+      atsScore: score,
+      atsFeedback: feedback,
+    });
   }
 
   async deleteResume(id: number): Promise<void> {
