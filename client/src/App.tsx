@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Builder from "@/pages/Builder";
-import Footer from "@/components/Footer";
+import Footer from "@/components/sections/utils/Footer";
 import { useState, useEffect } from "react";
 
 function Router() {
